@@ -1,9 +1,0 @@
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/uninstall.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/turtlebot3_autorace_uninstall.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/test.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/edit_cache.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/rebuild_cache.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/list_install_components.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/install.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/install/local.dir
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace/CMakeFiles/install/strip.dir

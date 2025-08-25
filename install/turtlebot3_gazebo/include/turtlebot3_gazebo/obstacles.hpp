@@ -1,1 +1,0 @@
-/home/rokey1/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/turtlebot3_gazebo/obstacles.hpp
