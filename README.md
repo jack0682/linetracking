@@ -10,6 +10,66 @@ TurtleBot3 자율주행 시스템의 장애물 회피 및 제어 성능 개선 �
 
 ### 📋 개선사항 상세
 
+### 8. **주차표시 탐지 및 매뉴버링 시스템**
+
+**새로운 기능:**
+주차 표지 탐지 시 자동 접근, 정렬, 정지 시퀀스
+
+**주요 컴포넌트:**
+
+#### 8.1 **센서 통합**
+```python
+# 주차 표지 탐지 신호 구독
+self.detect_parking_sign_sub = self.create_subscription(
+    UInt8, '/detect/traffic_sign', self.parking_sign_callback, 10)
+
+# 주차 표지 중심 좌표 구독  
+self.detect_parking_center_sub = self.create_subscription(
+    Point, '/detect/parking_center', self.parking_center_callback, 10)
+```
+
+#### 8.2 **상태 기반 접근 전략**
+```python
+# 3단계 주차 상태 머신
+parking_state = ['APPROACHING', 'STOPPING', 'STOPPED']
+
+# 거리 추적으로 최적 정지점 결정
+if self.front_distance < self.parking_closest_distance:
+    self.parking_closest_distance = self.front_distance
+elif self.front_distance > self.parking_closest_distance + 0.1:
+    self.parking_state = 'STOPPING'  # 최근접점 통과 시 정지 시작
+```
+
+#### 8.3 **시각 정렬 제어**
+```python
+# 주차 표지 중심 좌표 기반 정렬
+angular_error = -self.parking_center_x  # -1(left) to 1(right) 정규화
+angular_z = angular_error * 0.6  # 비례 제어 게인
+
+# 정렬 상태에 따른 속도 조절
+if abs(angular_error) < self.parking_angle_threshold:
+    twist.linear.x = self.parking_approach_speed  # 0.015 m/s
+else:
+    twist.linear.x = self.parking_approach_speed * 0.8  # 정렬 중 감속
+```
+
+#### 8.4 **시간 기반 정지 관리**
+```python
+# 5초간 정지 후 정상 운행 복귀
+if time_elapsed >= self.parking_stop_duration:
+    self.parking_maneuver_active = False
+    self.state = 'NORMAL'
+```
+
+**파라미터 설정:**
+- `parking_approach_speed`: 0.015 m/s (접근 속도)
+- `parking_angle_threshold`: 0.1 (정렬 허용 오차)
+- `parking_target_distance`: 0.6m (목표 거리)
+- `parking_stop_duration`: 5.0초 (정지 시간)
+- `parking_signal_timeout`: 3.0초 (신호 타임아웃)
+
+--- 
+
 #### 1. **미분항(D-term) 개선: Savitzky-Golay 필터 적용**
 
 **문제점:**
@@ -274,63 +334,7 @@ class SplineDifferentiator:
 d_for_ctrl = de_dt * self.dt_nom  # 연속시간 도함수 → 이산시간 차분 스케일
 ```
 
-### 8. **주차표시 탐지 및 매뉴버링 시스템**
 
-**새로운 기능:**
-주차 표지 탐지 시 자동 접근, 정렬, 정지 시퀀스
-
-**주요 컴포넌트:**
-
-#### 8.1 **센서 통합**
-```python
-# 주차 표지 탐지 신호 구독
-self.detect_parking_sign_sub = self.create_subscription(
-    UInt8, '/detect/traffic_sign', self.parking_sign_callback, 10)
-
-# 주차 표지 중심 좌표 구독  
-self.detect_parking_center_sub = self.create_subscription(
-    Point, '/detect/parking_center', self.parking_center_callback, 10)
-```
-
-#### 8.2 **상태 기반 접근 전략**
-```python
-# 3단계 주차 상태 머신
-parking_state = ['APPROACHING', 'STOPPING', 'STOPPED']
-
-# 거리 추적으로 최적 정지점 결정
-if self.front_distance < self.parking_closest_distance:
-    self.parking_closest_distance = self.front_distance
-elif self.front_distance > self.parking_closest_distance + 0.1:
-    self.parking_state = 'STOPPING'  # 최근접점 통과 시 정지 시작
-```
-
-#### 8.3 **시각 정렬 제어**
-```python
-# 주차 표지 중심 좌표 기반 정렬
-angular_error = -self.parking_center_x  # -1(left) to 1(right) 정규화
-angular_z = angular_error * 0.6  # 비례 제어 게인
-
-# 정렬 상태에 따른 속도 조절
-if abs(angular_error) < self.parking_angle_threshold:
-    twist.linear.x = self.parking_approach_speed  # 0.015 m/s
-else:
-    twist.linear.x = self.parking_approach_speed * 0.8  # 정렬 중 감속
-```
-
-#### 8.4 **시간 기반 정지 관리**
-```python
-# 5초간 정지 후 정상 운행 복귀
-if time_elapsed >= self.parking_stop_duration:
-    self.parking_maneuver_active = False
-    self.state = 'NORMAL'
-```
-
-**파라미터 설정:**
-- `parking_approach_speed`: 0.015 m/s (접근 속도)
-- `parking_angle_threshold`: 0.1 (정렬 허용 오차)
-- `parking_target_distance`: 0.6m (목표 거리)
-- `parking_stop_duration`: 5.0초 (정지 시간)
-- `parking_signal_timeout`: 3.0초 (신호 타임아웃)
 
 ### 📊 통합 시스템 아키텍처
 
