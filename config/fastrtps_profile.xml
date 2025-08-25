@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+    <participant profile_name="default_participant" is_default_profile="true">
+        <rtps>
+            <builtin>
+                <discovery_config>
+                    <discoveryProtocol>SIMPLE</discoveryProtocol>
+                    <use_SIMPLE_EndpointDiscoveryProtocol>true</use_SIMPLE_EndpointDiscoveryProtocol>
+                    <use_SIMPLE_ParticipantDiscoveryProtocol>true</use_SIMPLE_ParticipantDiscoveryProtocol>
+                    <leaseDuration>
+                        <sec>10</sec>
+                        <nanosec>0</nanosec>
+                    </leaseDuration>
+                </discovery_config>
+            </builtin>
+        </rtps>
+    </participant>
+</profiles>

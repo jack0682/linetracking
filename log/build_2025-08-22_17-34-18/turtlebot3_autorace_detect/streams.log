@@ -1,0 +1,51 @@
+[3.048s] Invoking command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/build --no-deps symlink_data
+[4.460s] running develop
+[5.292s] running egg_info
+[5.293s] creating turtlebot3_autorace_detect.egg-info
+[5.299s] writing turtlebot3_autorace_detect.egg-info/PKG-INFO
+[5.299s] writing dependency_links to turtlebot3_autorace_detect.egg-info/dependency_links.txt
+[5.299s] writing entry points to turtlebot3_autorace_detect.egg-info/entry_points.txt
+[5.299s] writing requirements to turtlebot3_autorace_detect.egg-info/requires.txt
+[5.299s] writing top-level names to turtlebot3_autorace_detect.egg-info/top_level.txt
+[5.299s] writing manifest file 'turtlebot3_autorace_detect.egg-info/SOURCES.txt'
+[5.306s] reading manifest file 'turtlebot3_autorace_detect.egg-info/SOURCES.txt'
+[5.308s] writing manifest file 'turtlebot3_autorace_detect.egg-info/SOURCES.txt'
+[5.310s] running build_ext
+[5.310s] Creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/python3.10/site-packages/turtlebot3-autorace-detect.egg-link (link to .)
+[5.312s] Installing detect_construction_sign script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.312s] Installing detect_intersection_sign script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.313s] Installing detect_lane script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.314s] Installing detect_level_crossing script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.314s] Installing detect_level_crossing_sign script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.315s] Installing detect_parking_sign script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.315s] Installing detect_traffic_light script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.316s] Installing detect_tunnel_sign script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/turtlebot3_autorace_detect
+[5.316s] 
+[5.324s] Installed /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect
+[5.324s] running symlink_data
+[5.324s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/ament_index
+[5.324s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/ament_index/resource_index
+[5.324s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/ament_index/resource_index/packages
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/resource/turtlebot3_autorace_detect -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/ament_index/resource_index/packages
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/package.xml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect
+[5.325s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/launch
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/launch/detect_level_crossing.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/launch
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/launch/detect_lane.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/launch
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/launch/detect_traffic_light.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/launch
+[5.325s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/launch/detect_sign.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/launch
+[5.325s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param
+[5.325s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/lane
+[5.326s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/param/lane/lane.yaml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/lane
+[5.326s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/level
+[5.326s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/param/level/level.yaml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/level
+[5.326s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/traffic_light
+[5.337s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/param/traffic_light/traffic_light.yaml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/param/traffic_light
+[5.338s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.338s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/tunnel.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.338s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/stop.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.338s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/intersection.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.338s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/left.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.338s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/construction.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.339s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/parking.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.339s] symbolically linking /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/image/right.png -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/share/turtlebot3_autorace_detect/image
+[5.395s] Invoked command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect' returned '0': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/build --no-deps symlink_data

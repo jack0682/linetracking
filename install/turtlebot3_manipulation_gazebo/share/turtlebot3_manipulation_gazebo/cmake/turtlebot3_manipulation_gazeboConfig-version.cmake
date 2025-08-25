@@ -1,0 +1,1 @@
+/home/rokey1/turtlebot3_ws/build/turtlebot3_manipulation_gazebo/ament_cmake_core/turtlebot3_manipulation_gazeboConfig-version.cmake
