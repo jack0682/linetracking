@@ -10,7 +10,9 @@
       "Bash(echo $DISPLAY)",
       "Bash(sudo sed:*)",
       "Bash(apt list:*)",
-      "Bash(ros2 run:*)"
+      "Bash(ros2 run:*)",
+      "Bash(ros2 topic list:*)",
+      "Bash(ros2 node list:*)"
     ],
     "deny": [],
     "ask": []

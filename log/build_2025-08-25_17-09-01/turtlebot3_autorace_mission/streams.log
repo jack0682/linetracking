@@ -1,0 +1,26 @@
+[1.637s] Invoking command in '/home/rokey1/turtlebot3_ws/src/turtlebot3_autorace/turtlebot3_autorace_mission': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_autorace_mission build --build-base /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build install --record /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log --single-version-externally-managed install_data
+[1.925s] running egg_info
+[1.926s] writing ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/PKG-INFO
+[1.926s] writing dependency_links to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/dependency_links.txt
+[1.926s] writing entry points to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/entry_points.txt
+[1.926s] writing requirements to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/requires.txt
+[1.926s] writing top-level names to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/top_level.txt
+[1.928s] reading manifest file '../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/SOURCES.txt'
+[1.929s] writing manifest file '../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/SOURCES.txt'
+[1.929s] running build
+[1.929s] running build_py
+[1.929s] copying turtlebot3_autorace_mission/control_lane.py -> /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[1.929s] running install
+[1.929s] running install_lib
+[1.930s] copying /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission/control_lane.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[1.931s] byte-compiling /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission/control_lane.py to control_lane.cpython-310.pyc
+[1.932s] running install_data
+[1.932s] running install_egg_info
+[1.934s] removing '/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission-1.2.2-py3.10.egg-info' (and everything under it)
+[1.934s] Copying ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission-1.2.2-py3.10.egg-info
+[1.935s] running install_scripts
+[1.956s] Installing avoid_construction script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[1.956s] Installing control_lane script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[1.956s] Installing mission_tunnel script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[1.956s] writing list of installed files to '/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log'
+[2.079s] Invoked command in '/home/rokey1/turtlebot3_ws/src/turtlebot3_autorace/turtlebot3_autorace_mission' returned '0': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_autorace_mission build --build-base /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build install --record /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log --single-version-externally-managed install_data
