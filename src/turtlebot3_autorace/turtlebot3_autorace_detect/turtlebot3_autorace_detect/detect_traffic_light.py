@@ -32,6 +32,9 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import String
 
 
+
+
+
 class DetectTrafficLight(Node):
 
     def __init__(self):
@@ -358,6 +361,8 @@ class DetectTrafficLight(Node):
 
         mask = cv2.bitwise_not(mask)
         return mask
+    
+    
 
     def find_circle_of_traffic_light(self, mask, color):
         detect_result = False
@@ -381,10 +386,53 @@ class DetectTrafficLight(Node):
         roi_y_start = height // 3
         roi_y_end = 2 * height // 3
 
+        #8_25 jsj
+        def is_valid_circle(x, y):
+            check_radius = 30
+            x_start = max(0, x - check_radius)
+            x_end = min(width, x + check_radius)
+            y_start = max(0, y - check_radius)
+            y_end = min(height, y + check_radius)
+            
+            # 검증 영역 추출
+            roi_mask = mask[y_start:y_end, x_start:x_end]
+            
+            if roi_mask.size == 0:
+                return False
+            
+            # 허프 원 변환 적용
+            circles = cv2.HoughCircles(
+                roi_mask,
+                cv2.HOUGH_GRADIENT,
+                dp=1,              # 누적기 해상도 비율
+                minDist=20,        # 원 중심 간 최소 거리
+                param1=50,         # Canny 에지 검출 상위 임계값
+                param2=15,         # 누적기 임계값 (작을수록 더 많은 원 검출)
+                minRadius=5,       # 최소 반지름
+                maxRadius=25       # 최대 반지름
+            )
+            
+            if circles is not None:
+                circles = np.round(circles[0, :]).astype("int")
+                # 검출된 원이 keypoint 근처에 있는지 확인
+                for (cx, cy, r) in circles:
+                    # 상대 좌표를 절대 좌표로 변환
+                    abs_cx = cx + x_start
+                    abs_cy = cy + y_start
+                    
+                    # keypoint와의 거리 계산
+                    distance = np.sqrt((abs_cx - x)**2 + (abs_cy - y)**2)
+                    
+                    # 거리가 반지름 이내이면 유효한 원으로 판단
+                    if distance <= r:
+                        return True
+            
+            return False
+
         for i in range(len(keypts)):
             self.point_x = int(keypts[i].pt[0])
             self.point_y = int(keypts[i].pt[1])
-            if roi_x_start < self.point_x < roi_x_end and roi_y_start < self.point_y < roi_y_end:
+            if roi_x_start < self.point_x < roi_x_end and roi_y_start < self.point_y < roi_y_end and is_valid_circle(self.point_x, self.point_y):
                 detect_result = True
                 self.get_logger().info(f'{color} light detected')
                 msg = String()
