@@ -1,1 +1,0 @@
-/home/rokey1/turtlebot3_ws/src/turtlebot3_autorace/turtlebot3_autorace_detect/launch/detect_traffic_light.launch.py

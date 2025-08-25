@@ -1,1 +1,0 @@
-/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_detect/launch/detect_lane.launch.py
