@@ -8,6 +8,19 @@ TurtleBot3 자율주행 시스템의 장애물 회피 및 제어 성능 개선 �
 ### 🎯 주요 개선 목표
 기존 단순 PD 제어의 한계를 극복하고 수치적 안정성과 제어 성능을 동시에 향상
 
+### 터미널별 켜야하는 명령어 모음
+
+```bash
+ros2 launch turtlebot3_gazebo turtlebot3_autorace_2020.launch.py #가제보 키기 
+ros2 launch turtlebot3_autorace_camera intrinsic_camera_calibration.launch.py #intinsic camera on
+ros2 launch turtlebot3_autorace_camera extrinsic_camera_calibration.launch.py calibration_mode:=True #extrinsic camera on
+ros2 launch turtlebot3_autorace_detect detect_lane.launch.py #lane detect on
+ros2 launch turtlebot3_autorace_mission control_lane.launch.py #lane follow on
+ros2 launch turtlebot3_autorace_detect detect_sign.launch.py #parking sign detect on
+ros2 launch turtlebot3_autorace_detect detect_traffic_light.launch.py #traffic light detect on
+ros2 launch turtlebot3_autorace_mission mission_construction.launch.py #sign후 행동 양식 on
+```
+
 ### 📋 개선사항 상세
 
 ### 8. **주차표시 탐지 및 매뉴버링 시스템**
@@ -67,6 +80,49 @@ if time_elapsed >= self.parking_stop_duration:
 - `parking_target_distance`: 0.6m (목표 거리)
 - `parking_stop_duration`: 5.0초 (정지 시간)
 - `parking_signal_timeout`: 3.0초 (신호 타임아웃)
+
+### 🚨 **주요 업데이트 (2025-08-25 18:14) - 차선 내 주차 시스템**
+
+#### **문제점 발견:**
+- 기존 패스바이 방식이 차선을 벗어날 위험
+- 표지판 직진 접근 시 충돌 발생
+- 차선 이탈로 인한 안전성 문제
+
+#### **해결책: 차선 내 측면 주차**
+```python
+# 차선 이탈 방지 주차 시스템 (2025-08-25 18:14)
+parking_lateral_offset = 0.15          # 차선 내 측면 이동 (15cm만)
+parking_forward_distance = 0.6         # 전진 거리 (60cm)
+parking_max_lateral_angular = 0.15     # 최대 각속도 제한 (차선 유지)
+```
+
+#### **새로운 동작 로직:**
+
+**8.5 차선 내 안전 주차**
+```python
+# 1단계: 표지판 감지 시 미세 회피
+if sign_side == 'right':
+    target_lateral_adjustment = -0.15  # 좌측으로 15cm 이동
+else:
+    target_lateral_adjustment = 0.15   # 우측으로 15cm 이동
+
+# 2단계: 차선 내에서 전진
+distance_traveled >= 0.6  # 60cm만 전진하여 표지판 옆 도달
+
+# 3단계: 차선 내 정차
+twist = Twist()  # 5초간 정지 (차선 이탈 없음)
+```
+
+**안전성 개선사항:**
+- **차선 이탈 방지**: 최대 15cm 측면 이동으로 제한
+- **충돌 방지**: 표지판을 향해 직진하지 않고 측면 회피
+- **정확한 정차**: 0.6m 전진으로 표지판 정확히 옆에 위치
+- **lane-following 연계**: 기존 차선 추종과 매끄럽게 연결
+
+**매개변수 최적화 (18:14 업데이트):**
+- `parking_approach_speed_normal`: 0.02 m/s (더 안전한 속도)
+- `parking_lateral_offset`: 0.15m (차선 내 안전 여백)
+- `parking_max_lateral_angular`: 0.15 rad/s (급격한 조향 방지)
 
 --- 
 

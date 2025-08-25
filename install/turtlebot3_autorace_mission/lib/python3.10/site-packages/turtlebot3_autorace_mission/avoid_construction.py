@@ -198,14 +198,30 @@ class AvoidConstruction(Node):
         self.parking_center_y = 0.0  # Normalized Y position (-1 to 1)
         self.parking_confidence = 0.0  # Detection confidence
         
-        # Parking approach control parameters
-        self.parking_approach_speed = 0.015  # Slow speed when approaching parking sign
-        self.parking_angle_threshold = 0.1  # Threshold for center alignment
-        self.parking_target_distance = 0.6  # Target distance from parking sign (meters)
-        self.parking_stop_duration = 5.0  # Duration to stop at parking spot (seconds)
+        # Parking approach control parameters (IMPROVED FOR COLLISION AVOIDANCE)
+        self.parking_approach_speed = 0.01   # Even slower approach speed (was 0.015)
+        self.parking_angle_threshold = 0.1   # Threshold for center alignment
+        self.parking_target_distance = 0.6   # Target distance from parking sign (meters)
+        self.parking_stop_duration = 5.0     # Duration to stop at parking spot (seconds)
+        
+        # Enhanced distance tracking for PASS-BY parking
         self.parking_closest_distance = float('inf')  # Track closest distance to parking sign
-        self.parking_stop_start_time = None  # Time when parking stop started
-        self.parking_state = 'APPROACHING'  # 'APPROACHING', 'STOPPING', 'STOPPED'
+        self.parking_stop_start_time = None          # Time when parking stop started
+        self.parking_state = 'APPROACHING'           # 'APPROACHING', 'PASSING', 'STOPPING', 'STOPPED'
+        
+        # Pass-by parking parameters
+        self.parking_side_clearance = 0.4           # Lateral clearance from sign (40cm)
+        self.parking_pass_distance = 0.8            # Distance to travel past the sign
+        self.parking_initial_front_distance = None  # Store initial front distance when sign detected
+        self.parking_passed_sign = False            # Flag to track if we've passed the sign
+        self.parking_pass_start_position = None     # Position when starting to pass
+        
+        # Safety and control parameters
+        self.parking_emergency_stop_distance = 0.12  # Emergency stop if too close (12cm)
+        self.parking_approach_speed_normal = 0.025   # Normal approach speed (increased for pass-by)
+        self.parking_approach_speed_passing = 0.015  # Speed when passing sign
+        self.parking_distance_samples = deque(maxlen=5)  # Smooth distance measurements
+        self.parking_stable_count = 0                # Count for stable distance readings
         # [END] Code added for parking sign parameters (2025-08-25)
 
         # lane_state value: 1 (left lane only), 2 (both), 3 (right lane only), 4 (not detected)
@@ -617,9 +633,9 @@ class AvoidConstruction(Node):
             twist = Twist()
             self.avoid_cmd_pub.publish(twist)
     
-    # [START] Code added for parking maneuver state processing (2025-08-25)
+    # [START] Code added for parking maneuver state processing (2025-08-25) - PASS-BY PARKING
     def process_parking_maneuver_state(self):
-        """Handle parking maneuver behavior - slow approach and stop at closest point"""
+        """Handle parking maneuver behavior - PASS-BY parking (drive past sign and stop beside it)"""
         
         # Set state to parking maneuver
         self.state = 'PARKING_MANEUVER'
@@ -627,43 +643,88 @@ class AvoidConstruction(Node):
         twist = Twist()
         current_time = self.get_clock().now()
         
+        # Smooth distance measurement using moving average
+        self.parking_distance_samples.append(self.front_distance)
+        if len(self.parking_distance_samples) > 0:
+            smooth_distance = sum(self.parking_distance_samples) / len(self.parking_distance_samples)
+        else:
+            smooth_distance = self.front_distance
+            
+        # CRITICAL SAFETY CHECK - Emergency stop if too close
+        if smooth_distance < self.parking_emergency_stop_distance:
+            self.get_logger().error(f'EMERGENCY STOP: Too close to obstacle ({smooth_distance:.3f}m < {self.parking_emergency_stop_distance}m)')
+            self.parking_state = 'STOPPING'
+            self.parking_stop_start_time = current_time
+            twist = Twist()  # Full stop
+            self.avoid_cmd_pub.publish(twist)
+            self.publish_active(True)
+            return
+        
         if self.parking_state == 'APPROACHING':
+            # Store initial distance when first detecting the sign
+            if self.parking_initial_front_distance is None:
+                self.parking_initial_front_distance = smooth_distance
+                self.get_logger().info(f'Starting pass-by parking approach. Initial distance: {smooth_distance:.3f}m')
+            
             # Track the closest distance to parking sign
-            if self.front_distance < self.parking_closest_distance:
-                self.parking_closest_distance = self.front_distance
-                self.get_logger().info(f'Closest distance updated: {self.parking_closest_distance:.2f}m')
-            
-            # Check if we're moving away from the sign (passed the closest point)
-            elif self.front_distance > self.parking_closest_distance + 0.1:  # 10cm tolerance
-                # We've passed the closest point, start stopping
-                self.parking_state = 'STOPPING'
-                self.parking_stop_start_time = current_time
-                self.get_logger().info(f'Passed closest point ({self.parking_closest_distance:.2f}m) - Starting 5-second stop')
-                twist = Twist()  # Stop immediately
-                self.avoid_cmd_pub.publish(twist)
-                self.publish_active(True)
-                return
-            
-            # Continue approaching slowly
-            # Calculate angular velocity to align with parking sign center
-            angular_error = -self.parking_center_x  # Negative because we want to turn toward the sign
-            
-            # If parking sign is well-centered, move forward slowly
-            if abs(angular_error) < self.parking_angle_threshold:
-                self.get_logger().info(f'Approaching parking sign - Distance: {self.front_distance:.2f}m (closest: {self.parking_closest_distance:.2f}m)')
-                twist.linear.x = self.parking_approach_speed
-                twist.angular.z = 0.0
+            if smooth_distance < self.parking_closest_distance:
+                self.parking_closest_distance = smooth_distance
+                self.parking_stable_count = 0
+                self.get_logger().info(f'Closest distance updated: {self.parking_closest_distance:.3f}m')
             else:
-                # Turn toward the parking sign center while moving slowly forward
-                angular_z = angular_error * 0.6  # Proportional control gain
+                self.parking_stable_count += 1
+            
+            # Determine side to pass based on parking sign center position
+            pass_side = 'right' if self.parking_center_x > 0 else 'left'
+            
+            # Calculate lateral offset to pass beside the sign (not toward it)
+            if pass_side == 'right':
+                # Pass on the right side of the sign
+                target_angular_error = 0.3  # Turn slightly right to pass on right
+            else:
+                # Pass on the left side of the sign  
+                target_angular_error = -0.3  # Turn slightly left to pass on left
+            
+            # Smoothly steer to the passing side
+            angular_z = target_angular_error * 0.5  # Gentle steering
+            angular_z = max(-0.3, min(0.3, angular_z))  # Limit angular velocity
+            
+            # Check if we've started passing the sign (distance is increasing after getting close)
+            if (self.parking_closest_distance < 0.8 and 
+                smooth_distance > self.parking_closest_distance + 0.1 and
+                self.parking_stable_count >= 2):
                 
-                # Limit angular velocity
-                max_angular = 0.3
-                angular_z = max(-max_angular, min(max_angular, angular_z))
+                self.parking_state = 'PASSING'
+                self.parking_pass_start_position = (self.current_pos_x, self.current_pos_y)
+                self.get_logger().info(f'Started passing the sign on {pass_side} side. Distance: {smooth_distance:.3f}m')
+            
+            # Continue approaching with side bias
+            self.get_logger().info(f'Approaching sign with {pass_side} bias - Distance: {smooth_distance:.3f}m, Angular: {angular_z:.3f}')
+            twist.linear.x = self.parking_approach_speed_normal
+            twist.angular.z = angular_z
+            
+        elif self.parking_state == 'PASSING':
+            # Continue driving past the sign
+            if self.parking_pass_start_position is not None:
+                # Calculate distance traveled since starting to pass
+                dx = self.current_pos_x - self.parking_pass_start_position[0]
+                dy = self.current_pos_y - self.parking_pass_start_position[1]
+                distance_traveled = (dx**2 + dy**2)**0.5
                 
-                self.get_logger().info(f'Aligning with parking sign - Angular error: {angular_error:.3f}')
-                twist.linear.x = self.parking_approach_speed * 0.8  # Slower when turning
-                twist.angular.z = angular_z
+                # Check if we've traveled enough distance past the sign
+                if distance_traveled >= self.parking_pass_distance:
+                    self.parking_state = 'STOPPING'
+                    self.parking_stop_start_time = current_time
+                    self.get_logger().info(f'Traveled {distance_traveled:.3f}m past sign. Starting parking stop.')
+                    twist = Twist()  # Stop immediately
+                    self.avoid_cmd_pub.publish(twist)
+                    self.publish_active(True)
+                    return
+            
+            # Continue moving forward while passing
+            self.get_logger().info(f'Passing sign - Front distance: {smooth_distance:.3f}m')
+            twist.linear.x = self.parking_approach_speed_passing
+            twist.angular.z = 0.0  # Drive straight while passing
         
         elif self.parking_state == 'STOPPING':
             # Stay stopped for the specified duration
@@ -671,16 +732,22 @@ class AvoidConstruction(Node):
             
             if time_elapsed >= self.parking_stop_duration:
                 # Finished parking, return to normal
-                self.get_logger().info('Parking completed - Resuming normal operation')
+                self.get_logger().info('Pass-by parking completed - Resuming normal operation')
                 self.parking_maneuver_active = False
                 self.parking_sign_detected = False
+                self.parking_closest_distance = float('inf')
+                self.parking_stable_count = 0
+                self.parking_distance_samples.clear()
+                self.parking_initial_front_distance = None
+                self.parking_passed_sign = False
+                self.parking_pass_start_position = None
                 self.state = 'NORMAL'
                 self.publish_active(False)
                 twist = Twist()  # Ensure stopped
             else:
                 # Continue stopping
                 remaining_time = self.parking_stop_duration - time_elapsed
-                self.get_logger().info(f'Parking stop - {remaining_time:.1f}s remaining')
+                self.get_logger().info(f'Parking stop beside sign - {remaining_time:.1f}s remaining')
                 twist = Twist()  # Stay stopped
         
         self.avoid_cmd_pub.publish(twist)

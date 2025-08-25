@@ -1,0 +1,54 @@
+[2.380s] Invoking command in '/home/rokey1/turtlebot3_ws/src/turtlebot3_autorace/turtlebot3_autorace_mission': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_autorace_mission build --build-base /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build install --record /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log --single-version-externally-managed install_data
+[2.981s] running egg_info
+[2.981s] creating ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info
+[2.981s] writing ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/PKG-INFO
+[2.981s] writing dependency_links to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/dependency_links.txt
+[2.981s] writing entry points to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/entry_points.txt
+[2.981s] writing requirements to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/requires.txt
+[2.982s] writing top-level names to ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/top_level.txt
+[2.982s] writing manifest file '../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/SOURCES.txt'
+[2.983s] reading manifest file '../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/SOURCES.txt'
+[2.984s] writing manifest file '../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info/SOURCES.txt'
+[2.984s] running build
+[2.984s] running build_py
+[2.985s] creating /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build
+[2.985s] creating /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib
+[2.985s] creating /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[2.985s] copying turtlebot3_autorace_mission/avoid_construction.py -> /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[2.985s] copying turtlebot3_autorace_mission/control_lane.py -> /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[2.985s] copying turtlebot3_autorace_mission/__init__.py -> /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[2.985s] copying turtlebot3_autorace_mission/mission_tunnel.py -> /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission
+[2.987s] running install
+[2.987s] running install_lib
+[2.987s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[2.988s] copying /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission/avoid_construction.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[2.988s] copying /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission/control_lane.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[2.988s] copying /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission/__init__.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[2.991s] copying /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build/lib/turtlebot3_autorace_mission/mission_tunnel.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission
+[2.992s] byte-compiling /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission/avoid_construction.py to avoid_construction.cpython-310.pyc
+[2.998s] byte-compiling /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission/control_lane.py to control_lane.cpython-310.pyc
+[3.000s] byte-compiling /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission/__init__.py to __init__.cpython-310.pyc
+[3.000s] byte-compiling /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission/mission_tunnel.py to mission_tunnel.cpython-310.pyc
+[3.001s] running install_data
+[3.002s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/ament_index
+[3.002s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/ament_index/resource_index
+[3.002s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/ament_index/resource_index/packages
+[3.002s] copying resource/turtlebot3_autorace_mission -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/ament_index/resource_index/packages
+[3.002s] copying package.xml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission
+[3.002s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/launch
+[3.002s] copying launch/mission_construction.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/launch
+[3.002s] copying launch/control_lane.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/launch
+[3.003s] copying launch/mission_tunnel.launch.py -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/launch
+[3.003s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/param
+[3.003s] copying param/navigation.yaml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/param
+[3.003s] creating /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/map
+[3.003s] copying map/map.yaml -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/map
+[3.003s] copying map/map.pgm -> /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/share/turtlebot3_autorace_mission/map
+[3.003s] running install_egg_info
+[3.007s] Copying ../../../build/turtlebot3_autorace_mission/turtlebot3_autorace_mission.egg-info to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages/turtlebot3_autorace_mission-1.2.2-py3.10.egg-info
+[3.008s] running install_scripts
+[3.041s] Installing avoid_construction script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[3.042s] Installing control_lane script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[3.043s] Installing mission_tunnel script to /home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/turtlebot3_autorace_mission
+[3.043s] writing list of installed files to '/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log'
+[3.133s] Invoked command in '/home/rokey1/turtlebot3_ws/src/turtlebot3_autorace/turtlebot3_autorace_mission' returned '0': PYTHONPATH=/home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_autorace_mission build --build-base /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/build install --record /home/rokey1/turtlebot3_ws/build/turtlebot3_autorace_mission/install.log --single-version-externally-managed install_data
