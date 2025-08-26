@@ -24,13 +24,13 @@ class SetInitialPose(Node):
         initial_pose.header.frame_id = 'map'
         initial_pose.header.stamp = self.get_clock().now().to_msg()
         
-        # Set initial position (로봇의 현재 위치)
-        initial_pose.pose.pose.position.x = -2.47
-        initial_pose.pose.pose.position.y = 1.67
-        initial_pose.pose.pose.position.z = -0.00143
+        # Set initial position (실제 시작 위치 - odom에서 확인한 좌표)
+        initial_pose.pose.pose.position.x = -1.7603088878461883  # 진짜 시작 위치
+        initial_pose.pose.pose.position.y = -0.18501192976186576
+        initial_pose.pose.pose.position.z = 0.008508788515588466
         
-        # Set initial orientation (현재 방향)
-        yaw = 0.0  # radians
+        # Set initial orientation (실제 시작 방향)
+        yaw = -1.556020  # radians (navigation_trigger에서 사용하는 방향)
         initial_pose.pose.pose.orientation.x = 0.0
         initial_pose.pose.pose.orientation.y = 0.0
         initial_pose.pose.pose.orientation.z = math.sin(yaw / 2.0)
@@ -46,7 +46,7 @@ class SetInitialPose(Node):
         
         # Publish initial pose
         self.initial_pose_pub.publish(initial_pose)
-        self.get_logger().info('Initial pose set: x=-2.47, y=1.67')
+        self.get_logger().info(f'Initial pose set: x={initial_pose.pose.pose.position.x:.3f}, y={initial_pose.pose.pose.position.y:.3f}, yaw={yaw:.3f}')
         
         # Shutdown after publishing
         self.destroy_node()

@@ -17,6 +17,7 @@
 # Author: ChanHyeong Lee
 
 import math
+import random
 from collections import deque
 from scipy import signal
 
@@ -86,13 +87,6 @@ class AvoidConstruction(Node):
             10
         )
         
-        # Subscribe to navigation status
-        self.nav_status_sub = self.create_subscription(
-            Bool,
-            '/navigation_active',
-            self.nav_status_callback,
-            10
-        )
         self.image_sub = self.create_subscription(
             Image,
             '/camera/image_projected',
@@ -143,15 +137,6 @@ class AvoidConstruction(Node):
         self.bridge = CvBridge()
         self.lane_detected = False
         
-        # Navigation state
-        self.navigation_active = False
-        
-        # Additional publisher for dummy commands when navigation is active
-        self.dummy_cmd_pub = self.create_publisher(
-            Twist,
-            '/dummy_lane_cmd',
-            10
-        )
 
         # Parameter settings
         self.danger_distance = 0.24    # Danger zone y threshold (meters)
@@ -203,45 +188,34 @@ class AvoidConstruction(Node):
         self.current_pos_x = 0.0
         self.current_pos_y = 0.0
         
-        # [START] Code added for parking sign parameters (2025-08-25)
-        # Parking sign parameters
+        # [START] Waypoint-based parking system (2025-08-26)
+        # Parking state management
         self.parking_sign_detected = False
         self.parking_last_update_time = None
-        self.parking_signal_timeout = 3.0  # Timeout for parking signal (seconds)
+        self.parking_signal_timeout = 3.0  # 신호 감지 timeout (사용 안 함)
         self.parking_maneuver_active = False
-        self.parking_maneuver_distance = 0.3  # Distance to move forward before parking maneuver
+        self.parking_start_time = None  # 주차 시작 시간 기록
+        self.parking_minimum_duration = 20.0  # 최소 주차 지속 시간 (20초)
         
-        # Parking sign center position
-        self.parking_center_x = 0.0  # Normalized X position (-1 to 1)
-        self.parking_center_y = 0.0  # Normalized Y position (-1 to 1)
-        self.parking_confidence = 0.0  # Detection confidence
+        # Waypoint coordinates (odom frame) - (x, y, target_yaw)
+        self.start_waypoint = (0.4936114648095425, 1.706690604705027, -1.556)     # 시작 지점
+        self.middle_waypoint = (0.49450489458485963, 0.7432805201960125, -1.556)  # 중간 경유지  
+        self.parking_space_1 = (0.7438981271471021, 0.7377510257783652, -1.556)   # 주차공간1
+        self.parking_space_2 = (0.2648888284365445, 0.7373139655277864, -1.556)   # 주차공간2
+        self.return_to_lane_waypoint = (0.1093812414389374, 1.7656589346728635, -1.564)  # 출차 후 lane 복귀 지점 (약 -π/2)
         
-        # Parking approach control parameters (IMPROVED FOR COLLISION AVOIDANCE)
-        self.parking_approach_speed = 0.01   # Even slower approach speed (was 0.015)
-        self.parking_angle_threshold = 0.1   # Threshold for center alignment
-        self.parking_target_distance = 0.6   # Target distance from parking sign (meters)
-        self.parking_stop_duration = 5.0     # Duration to stop at parking spot (seconds)
+        # Parking navigation parameters
+        self.waypoint_tolerance = 0.15  # Distance tolerance to consider waypoint reached
+        self.parking_speed = 0.03       # Speed during parking navigation
+        self.current_waypoint = None    # Current target waypoint
+        self.selected_parking_space = None  # Randomly selected parking space
+        self.parking_phase = 'IDLE'     # 'IDLE', 'TO_START', 'TO_MIDDLE', 'TO_PARKING', 'PARKED', 'DEPARKED'
+        self.parking_stop_duration = 5.0  # Duration to stop at parking spot (seconds)
+        self.parking_stop_start_time = None
         
-        # Enhanced distance tracking for PASS-BY parking
-        self.parking_closest_distance = float('inf')  # Track closest distance to parking sign
-        self.parking_stop_start_time = None          # Time when parking stop started
-        self.parking_state = 'APPROACHING'           # 'APPROACHING', 'PASSING', 'STOPPING', 'STOPPED'
-        
-        # Lane-keeping parking parameters (stay within lane)
-        self.parking_lateral_offset = 0.15          # Small lateral offset within lane (15cm)
-        self.parking_forward_distance = 0.6         # Distance to travel forward past sign center
-        self.parking_initial_front_distance = None  # Store initial front distance when sign detected
-        self.parking_passed_sign_center = False     # Flag to track if we've passed sign center
-        self.parking_pass_start_position = None     # Position when starting to pass
-        
-        # Safety and control parameters for lane-keeping parking
-        self.parking_emergency_stop_distance = 0.12  # Emergency stop if too close (12cm)
-        self.parking_approach_speed_normal = 0.02    # Slower speed to stay in lane
-        self.parking_approach_speed_passing = 0.015  # Speed when passing sign
-        self.parking_max_lateral_angular = 0.15     # Max angular velocity for lane-keeping (reduced)
-        self.parking_distance_samples = deque(maxlen=5)  # Smooth distance measurements
-        self.parking_stable_count = 0                # Count for stable distance readings
-        # [END] Code added for parking sign parameters (2025-08-25)
+        # Random parking space selection (done once when parking starts)
+        self.parking_spaces = [self.parking_space_1, self.parking_space_2]
+        # [END] Waypoint-based parking system (2025-08-26)
 
         # lane_state value: 1 (left lane only), 2 (both), 3 (right lane only), 4 (not detected)
         self.lane_state = None
@@ -305,53 +279,35 @@ class AvoidConstruction(Node):
         self.traffic_light_active = True
         self.get_logger().info(f'Traffic light detected: {self.traffic_type}')
     
-    def nav_status_callback(self, msg):
-        """Navigation status callback - switches control mode"""
-        prev_state = self.navigation_active
-        self.navigation_active = msg.data
-        
-        if prev_state != self.navigation_active:
-            if self.navigation_active:
-                self.get_logger().info('Navigation ACTIVE - Lane control DISABLED')
-            else:
-                self.get_logger().info('Navigation INACTIVE - Lane control ENABLED')
-    
     def publish_control_command(self, twist):
-        """
-        Publish control command - routes to appropriate topic based on navigation state
-        
-        Modified: 2025-08-26 11:32 - Added navigation state-based routing
-        - When navigation_active=True: commands sent to dummy topic (disabled)
-        - When navigation_active=False: commands sent to normal lane control topic
-        This prevents lane following from interfering with autonomous navigation
-        """
-        if self.navigation_active:
-            # Navigation is active - send to dummy topic (lane control disabled)
-            self.dummy_cmd_pub.publish(twist)
-        else:
-            # Navigation is not active - send to normal lane control
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+        """Publish control command to avoid topic"""
+        self.avoid_cmd_pub.publish(twist)
     
-    # [START] Code added for parking sign callback (2025-08-25)
+    # [START] Waypoint-based parking callback (2025-08-26)
     def parking_sign_callback(self, msg):
-        """Handle parking sign detection signal"""
-        if msg.data == 1:  # Parking sign detected (assuming value 1 means parking)
+        """Handle parking sign detection - start waypoint navigation"""
+        if msg.data == 1 and not self.parking_maneuver_active:  # Parking sign detected
             self.parking_sign_detected = True
             self.parking_last_update_time = self.get_clock().now()
-            if not self.parking_maneuver_active:
-                self.parking_maneuver_active = True
-                self.parking_state = 'APPROACHING'
-                self.parking_closest_distance = float('inf')
-                self.parking_stop_start_time = None
-                self.get_logger().info('Parking sign detected - Starting slow approach')
+            self.parking_start_time = self.get_clock().now()  # 주차 시작 시간 기록
+            self.parking_maneuver_active = True
+            
+            # Randomly select parking space
+            self.selected_parking_space = random.choice(self.parking_spaces)
+            space_num = 1 if self.selected_parking_space == self.parking_space_1 else 2
+            
+            # Start waypoint navigation
+            self.parking_phase = 'TO_START'
+            self.current_waypoint = self.start_waypoint
+            
+            self.get_logger().info(f'Parking sign detected! Selected parking space {space_num}')
+            self.get_logger().info(f'Starting waypoint navigation: Phase {self.parking_phase}')
+            self.get_logger().info(f'Parking will continue for minimum {self.parking_minimum_duration} seconds')
     
     def parking_center_callback(self, msg):
-        """Handle parking sign center position"""
-        self.parking_center_x = msg.x  # -1 (left) to 1 (right)
-        self.parking_center_y = msg.y  # -1 (top) to 1 (bottom)
-        self.parking_confidence = msg.z  # Detection confidence
-        self.get_logger().info(f'Parking center updated: ({self.parking_center_x:.3f}, {self.parking_center_y:.3f})')
-    # [END] Code added for parking sign callback (2025-08-25)
+        """Handle parking sign center position (not used in waypoint system)"""
+        pass  # Keep for compatibility but not used in waypoint navigation
+    # [END] Waypoint-based parking callback (2025-08-26)
 
     def image_callback(self, msg):
         if self.state == 'NORMAL':
@@ -460,21 +416,24 @@ class AvoidConstruction(Node):
                     self.state = 'NORMAL'
                     self.publish_active(False)
     
-    # [START] Code added for parking signal timeout check (2025-08-25)
+    # [START] Modified parking duration check (2025-08-26)
     def check_parking_signal_timeout(self):
-        """Check if parking signal has timed out and deactivate if necessary"""
+        """Check if minimum parking duration has passed before allowing deactivation"""
         if (self.parking_maneuver_active and 
-            self.parking_last_update_time is not None):
+            self.parking_start_time is not None):
             
             current_time = self.get_clock().now()
-            time_diff = (current_time - self.parking_last_update_time).nanoseconds / 1e9
+            time_since_start = (current_time - self.parking_start_time).nanoseconds / 1e9
             
-            if time_diff > self.parking_signal_timeout:
-                self.get_logger().info('Parking signal timeout - deactivating parking maneuver')
-                self.parking_maneuver_active = False
-                self.parking_sign_detected = False
-                if self.state == 'PARKING_MANEUVER':
-                    self.state = 'NORMAL'
+            # Only allow deactivation after minimum duration AND if parking is completed
+            if (time_since_start > self.parking_minimum_duration and 
+                self.parking_phase in ['PARKED', 'DEPARKED', 'IDLE']):
+                self.get_logger().info(f'Minimum parking duration ({self.parking_minimum_duration}s) completed - allowing normal return')
+                # Note: Don't force deactivation here, let the parking completion logic handle it
+            elif time_since_start < self.parking_minimum_duration:
+                # Force parking to continue even if signal is lost
+                if not self.parking_sign_detected:
+                    self.get_logger().info(f'Parking signal lost but continuing task - {time_since_start:.1f}s / {self.parking_minimum_duration}s elapsed')
                     self.publish_active(False)
     # [END] Code added for parking signal timeout check (2025-08-25)
 
@@ -513,7 +472,7 @@ class AvoidConstruction(Node):
             self.get_logger().info('Red light detected - Stopping')
             self.state = 'TRAFFIC_STOP'
             twist = Twist()  # Zero velocity
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+            self.publish_control_command(twist)
             self.publish_active(True)
             return
         
@@ -523,7 +482,7 @@ class AvoidConstruction(Node):
             twist = Twist()
             twist.linear.x = self.speed * self.yellow_speed_multiplier
             twist.angular.z = 0.0
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+            self.publish_control_command(twist)
             self.publish_active(True)
             return
         
@@ -547,12 +506,12 @@ class AvoidConstruction(Node):
             self.get_logger().info('Yellow light detected - Preparing to go')
             # Stay stopped but prepare to move
             twist = Twist()
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+            self.publish_control_command(twist)
             self.publish_active(True)
         else:
             # Stay stopped for red light
             twist = Twist()
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+            self.publish_control_command(twist)
             self.publish_active(True)
 
     def process_normal_state(self):
@@ -603,7 +562,7 @@ class AvoidConstruction(Node):
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = angular_z
-        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+        self.publish_control_command(twist)
         self.publish_active(True)
         
         # Use hysteresis for state transition
@@ -630,7 +589,7 @@ class AvoidConstruction(Node):
         else:
             twist.angular.z = 0.0
         
-        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+        self.publish_control_command(twist)
         self.publish_active(True)
         
         if self.lane_detected:
@@ -662,7 +621,7 @@ class AvoidConstruction(Node):
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = angular_z
-        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+        self.publish_control_command(twist)
         self.publish_active(True)
         
         # Use hysteresis for state transition
@@ -677,11 +636,11 @@ class AvoidConstruction(Node):
             self.state = 'NORMAL'
             self.publish_active(False)
             twist = Twist()
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+            self.publish_control_command(twist)
     
     # [START] Code added for parking maneuver state processing (2025-08-25) - PASS-BY PARKING
     def process_parking_maneuver_state(self):
-        """Handle parking maneuver behavior - PASS-BY parking (drive past sign and stop beside it)"""
+        """Handle waypoint-based parking navigation"""
         
         # Set state to parking maneuver
         self.state = 'PARKING_MANEUVER'
@@ -689,123 +648,109 @@ class AvoidConstruction(Node):
         twist = Twist()
         current_time = self.get_clock().now()
         
-        # Smooth distance measurement using moving average
-        self.parking_distance_samples.append(self.front_distance)
-        if len(self.parking_distance_samples) > 0:
-            smooth_distance = sum(self.parking_distance_samples) / len(self.parking_distance_samples)
-        else:
-            smooth_distance = self.front_distance
+        # Calculate distance to current waypoint
+        if self.current_waypoint is not None:
+            dx = self.current_waypoint[0] - self.current_pos_x
+            dy = self.current_waypoint[1] - self.current_pos_y
+            distance_to_waypoint = math.sqrt(dx**2 + dy**2)
             
-        # CRITICAL SAFETY CHECK - Emergency stop if too close
-        if smooth_distance < self.parking_emergency_stop_distance:
-            self.get_logger().error(f'EMERGENCY STOP: Too close to obstacle ({smooth_distance:.3f}m < {self.parking_emergency_stop_distance}m)')
-            self.parking_state = 'STOPPING'
-            self.parking_stop_start_time = current_time
-            twist = Twist()  # Full stop
-            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
-            self.publish_active(True)
-            return
-        
-        if self.parking_state == 'APPROACHING':
-            # Store initial distance when first detecting the sign
-            if self.parking_initial_front_distance is None:
-                self.parking_initial_front_distance = smooth_distance
-                self.get_logger().info(f'Starting lane-keeping parking approach. Initial distance: {smooth_distance:.3f}m')
+            # Calculate angle to waypoint
+            angle_to_waypoint = math.atan2(dy, dx)
+            angle_error = angle_to_waypoint - self.current_theta
             
-            # Track the closest distance to parking sign
-            if smooth_distance < self.parking_closest_distance:
-                self.parking_closest_distance = smooth_distance
-                self.parking_stable_count = 0
-                self.get_logger().info(f'Closest distance updated: {self.parking_closest_distance:.3f}m')
-            else:
-                self.parking_stable_count += 1
+            # Normalize angle error to [-pi, pi]
+            while angle_error > math.pi:
+                angle_error -= 2 * math.pi
+            while angle_error < -math.pi:
+                angle_error += 2 * math.pi
             
-            # Determine which side the sign is on and make SMALL adjustment to move slightly away
-            sign_side = 'right' if self.parking_center_x > 0 else 'left'
+            self.get_logger().info(f'Phase: {self.parking_phase}, Distance to waypoint: {distance_to_waypoint:.3f}m, Angle error: {angle_error:.3f}rad')
             
-            # Make small lateral adjustment to avoid direct collision while staying in lane
-            if sign_side == 'right':
-                # Sign is on right, move slightly left within lane
-                target_lateral_adjustment = -self.parking_lateral_offset  # Small left turn
-            else:
-                # Sign is on left, move slightly right within lane  
-                target_lateral_adjustment = self.parking_lateral_offset   # Small right turn
+            # Check if waypoint is reached
+            if distance_to_waypoint < self.waypoint_tolerance:
+                self.advance_to_next_waypoint()
+                return
             
-            # Very gentle steering to stay within lane boundaries
-            angular_z = target_lateral_adjustment * 0.8  # Gentle steering within lane
-            angular_z = max(-self.parking_max_lateral_angular, min(self.parking_max_lateral_angular, angular_z))
-            
-            # Check if we've passed the sign center (parking_center_x changes from one side to other)
-            # or if we're at a reasonable distance past the closest point
-            if (self.parking_closest_distance < 1.0 and 
-                smooth_distance > self.parking_closest_distance + 0.15 and
-                self.parking_stable_count >= 3):
+            # Navigate toward current waypoint
+            if self.parking_phase not in ['PARKED']:
+                # Simple proportional control
+                twist.linear.x = self.parking_speed
+                twist.angular.z = angle_error * 2.0  # P control for heading
                 
-                self.parking_state = 'PASSING'
-                self.parking_pass_start_position = (self.current_pos_x, self.current_pos_y)
-                self.get_logger().info(f'Started passing sign center, moving to parking position. Distance: {smooth_distance:.3f}m')
-            
-            # Continue approaching with small lateral adjustment
-            self.get_logger().info(f'Approaching (lane-keeping) - Sign on {sign_side}, Distance: {smooth_distance:.3f}m, Angular: {angular_z:.3f}')
-            twist.linear.x = self.parking_approach_speed_normal
-            twist.angular.z = angular_z
-            
-        elif self.parking_state == 'PASSING':
-            # Continue driving forward within lane to position beside the sign
-            if self.parking_pass_start_position is not None:
-                # Calculate distance traveled since starting to pass
-                dx = self.current_pos_x - self.parking_pass_start_position[0]
-                dy = self.current_pos_y - self.parking_pass_start_position[1]
-                distance_traveled = (dx**2 + dy**2)**0.5
-                
-                # Check if we've traveled enough distance to be beside the sign
-                if distance_traveled >= self.parking_forward_distance:
-                    self.parking_state = 'STOPPING'
-                    self.parking_stop_start_time = current_time
-                    self.get_logger().info(f'Reached parking position beside sign ({distance_traveled:.3f}m forward). Starting 5-second stop.')
-                    twist = Twist()  # Stop immediately
-                    self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
-                    self.publish_active(True)
-                    return
-            
-            # Continue moving forward slowly while staying in lane
-            # Apply minimal steering correction to stay centered in lane
-            lane_correction = 0.0
-            if abs(self.parking_center_x) > 0.8:  # Only correct if sign is very far to one side
-                lane_correction = -self.parking_center_x * 0.1  # Very gentle correction
-                lane_correction = max(-0.1, min(0.1, lane_correction))  # Limit correction
-            
-            self.get_logger().info(f'Moving forward to parking position - Distance traveled: {distance_traveled:.3f}m/{self.parking_forward_distance:.3f}m')
-            twist.linear.x = self.parking_approach_speed_passing
-            twist.angular.z = lane_correction  # Very small lane-keeping adjustment
+                # Limit angular velocity
+                max_angular = 1.0
+                twist.angular.z = max(-max_angular, min(max_angular, twist.angular.z))
         
-        elif self.parking_state == 'STOPPING':
-            # Stay stopped for the specified duration
+        # Handle parking completion
+        elif self.parking_phase == 'PARKED':
+            if self.parking_stop_start_time is None:
+                self.parking_stop_start_time = current_time
+                self.get_logger().info(f'Arrived at parking space! Starting {self.parking_stop_duration}s stop.')
+            
             time_elapsed = (current_time - self.parking_stop_start_time).nanoseconds / 1e9
             
             if time_elapsed >= self.parking_stop_duration:
-                # Finished parking, return to normal
-                self.get_logger().info('Lane-keeping parking completed - Resuming normal operation')
-                self.parking_maneuver_active = False
-                self.parking_sign_detected = False
-                self.parking_closest_distance = float('inf')
-                self.parking_stable_count = 0
-                self.parking_distance_samples.clear()
-                self.parking_initial_front_distance = None
-                self.parking_passed_sign_center = False
-                self.parking_pass_start_position = None
-                self.state = 'NORMAL'
-                self.publish_active(False)
-                twist = Twist()  # Ensure stopped
+                # Check if minimum parking duration has passed
+                time_since_start = (current_time - self.parking_start_time).nanoseconds / 1e9
+                
+                if time_since_start >= self.parking_minimum_duration:
+                    # Both parking stop and minimum duration completed - start departure
+                    self.get_logger().info(f'Parking completed after {time_since_start:.1f}s - Starting departure to lane')
+                    self.parking_phase = 'DEPARKED'
+                    self.current_waypoint = self.return_to_lane_waypoint
+                    self.parking_stop_start_time = None  # Clear parking stop timer
+                    
+                    self.get_logger().info(f'Starting departure to lane waypoint: ({self.return_to_lane_waypoint[0]:.3f}, {self.return_to_lane_waypoint[1]:.3f})')
+                    # Don't return to normal yet - continue with waypoint navigation
+                else:
+                    # Parking stop finished but minimum duration not reached - continue parking
+                    remaining_time = self.parking_minimum_duration - time_since_start
+                    self.get_logger().info(f'Parking stop completed, but waiting for minimum duration - {remaining_time:.1f}s remaining')
+                    twist = Twist()  # Stay stopped
             else:
                 # Continue stopping
                 remaining_time = self.parking_stop_duration - time_elapsed
-                self.get_logger().info(f'Parking stop beside sign (in lane) - {remaining_time:.1f}s remaining')
+                self.get_logger().info(f'Parking stop - {remaining_time:.1f}s remaining')
                 twist = Twist()  # Stay stopped
         
-        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
+        self.publish_control_command(twist)
         self.publish_active(True)
-    # [END] Code added for parking maneuver state processing (2025-08-25)
+    
+    def advance_to_next_waypoint(self):
+        """Advance to the next waypoint in the parking sequence"""
+        if self.parking_phase == 'TO_START':
+            self.parking_phase = 'TO_MIDDLE'
+            self.current_waypoint = self.middle_waypoint
+            self.get_logger().info('Reached start waypoint. Moving to middle waypoint.')
+            
+        elif self.parking_phase == 'TO_MIDDLE':
+            self.parking_phase = 'TO_PARKING'
+            self.current_waypoint = self.selected_parking_space
+            space_num = 1 if self.selected_parking_space == self.parking_space_1 else 2
+            self.get_logger().info(f'Reached middle waypoint. Moving to parking space {space_num}.')
+            
+        elif self.parking_phase == 'TO_PARKING':
+            self.parking_phase = 'PARKED'
+            self.current_waypoint = None
+            space_num = 1 if self.selected_parking_space == self.parking_space_1 else 2
+            self.get_logger().info(f'Reached parking space {space_num}!')
+            
+        elif self.parking_phase == 'DEPARKED':
+            # Reached lane return waypoint - complete parking sequence
+            self.get_logger().info('Reached lane return waypoint - Parking sequence completed!')
+            self.get_logger().info('Returning to NORMAL lane following mode')
+            
+            # Reset all parking states and return to normal
+            self.parking_maneuver_active = False
+            self.parking_sign_detected = False
+            self.parking_phase = 'IDLE'
+            self.current_waypoint = None
+            self.selected_parking_space = None
+            self.parking_stop_start_time = None
+            self.parking_start_time = None
+            self.state = 'NORMAL'
+            self.publish_active(False)
+    # [END] Waypoint-based parking maneuver state processing (2025-08-26)
 
     def publish_active(self, active: bool):
         bool_msg = Bool()
@@ -865,25 +810,45 @@ class AvoidConstruction(Node):
         traffic_text = f'Traffic: {self.traffic_type if self.traffic_type else "None"}'
         traffic_active_text = f'TL Active: {self.traffic_light_active}'
         distance_text = f'Front Dist: {self.front_distance:.2f}m'
-        # [START] Code added for parking status display (2025-08-25)
-        # [UPDATED] Status display for lane-keeping parking (2025-08-25 18:14)
-        parking_text = f'Parking: {self.parking_state if self.parking_maneuver_active else "Inactive"}'
-        parking_center_text = f'P-Center: ({self.parking_center_x:.2f}, {self.parking_center_y:.2f})'
-        parking_distance_text = f'P-Closest: {self.parking_closest_distance:.2f}m'
-        # [END] Code added for parking status display (2025-08-25)
-        # [END] Lane-keeping parking status display (2025-08-25 18:14)
+        # [START] Waypoint-based parking status display (2025-08-26)
+        parking_text = f'Parking: {self.parking_phase if self.parking_maneuver_active else "Inactive"}'
+        
+        if self.current_waypoint is not None:
+            parking_waypoint_text = f'Target: ({self.current_waypoint[0]:.2f}, {self.current_waypoint[1]:.2f})'
+            dx = self.current_waypoint[0] - self.current_pos_x
+            dy = self.current_waypoint[1] - self.current_pos_y
+            distance_to_waypoint = math.sqrt(dx**2 + dy**2)
+            parking_distance_text = f'Dist to WP: {distance_to_waypoint:.2f}m'
+        else:
+            parking_waypoint_text = f'Target: None'
+            parking_distance_text = f'Dist to WP: -'
+        
+        if self.selected_parking_space is not None:
+            space_num = 1 if self.selected_parking_space == self.parking_space_1 else 2
+            parking_space_text = f'Selected Space: {space_num}'
+        else:
+            parking_space_text = f'Selected Space: None'
+            
+        # Show parking duration
+        if self.parking_start_time is not None:
+            current_time = self.get_clock().now()
+            elapsed_time = (current_time - self.parking_start_time).nanoseconds / 1e9
+            parking_time_text = f'Parking Time: {elapsed_time:.1f}s/{self.parking_minimum_duration:.0f}s'
+        else:
+            parking_time_text = f'Parking Time: -'
+        # [END] Waypoint-based parking status display (2025-08-26)
         
         cv2.putText(img_vis, state_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         cv2.putText(img_vis, traffic_text, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         cv2.putText(img_vis, traffic_active_text, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         cv2.putText(img_vis, distance_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        # [START] Code added for parking status display (2025-08-25)
-        # [UPDATED] Status display for lane-keeping parking (2025-08-25 18:14)
+        # [START] Waypoint-based parking status display (2025-08-26)
         cv2.putText(img_vis, parking_text, (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(img_vis, parking_center_text, (10, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(img_vis, parking_waypoint_text, (10, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         cv2.putText(img_vis, parking_distance_text, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        # [END] Code added for parking status display (2025-08-25)
-        # [END] Lane-keeping parking status display (2025-08-25 18:14)
+        cv2.putText(img_vis, parking_space_text, (10, 170), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(img_vis, parking_time_text, (10, 190), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        # [END] Waypoint-based parking status display (2025-08-26)
         
         cv2.imshow('Cluster Points & Danger Zone', img_vis)
         cv2.waitKey(1)

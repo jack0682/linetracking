@@ -2,6 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 
@@ -26,6 +27,8 @@ class CmdVelMux(Node):
             Twist, '/cmd_vel_nav', self.nav_cmd_callback, 10)
         self.nav_status_sub = self.create_subscription(
             Bool, '/navigation_active', self.nav_status_callback, 10)
+        self.lane_restart_sub = self.create_subscription(
+            Bool, '/lane_following_restart', self.lane_restart_callback, 10)
             
         # Timer for command arbitration
         self.timer = self.create_timer(0.1, self.mux_commands)  # 10Hz
@@ -50,6 +53,18 @@ class CmdVelMux(Node):
         if prev_state != self.navigation_active:
             status = "ACTIVE" if self.navigation_active else "INACTIVE"
             self.get_logger().info(f'Navigation status: {status}')
+    
+    def lane_restart_callback(self, msg):
+        """Lane following restart callback"""
+        if msg.data:
+            # Reset command timestamps to ensure fresh start
+            self.last_lane_time = self.get_clock().now()
+            self.last_nav_time = self.get_clock().now() - Duration(seconds=2.0)  # Make nav commands stale
+            
+            # Force navigation_active to False
+            self.navigation_active = False
+            
+            self.get_logger().info('Lane following restarted - Navigation commands disabled, Lane commands enabled')
         
     def mux_commands(self):
         """Multiplex commands based on navigation state and freshness"""

@@ -17,10 +17,6 @@ param/navigation.yaml
 resource/turtlebot3_autorace_mission
 turtlebot3_autorace_mission/__init__.py
 turtlebot3_autorace_mission/avoid_construction.py
-turtlebot3_autorace_mission/cmd_vel_mux.py
-turtlebot3_autorace_mission/control_arbiter.py
 turtlebot3_autorace_mission/control_lane.py
 turtlebot3_autorace_mission/mission_tunnel.py
-turtlebot3_autorace_mission/navigate_to_door.py
 turtlebot3_autorace_mission/navigation_trigger.py
-turtlebot3_autorace_mission/set_initial_pose.py

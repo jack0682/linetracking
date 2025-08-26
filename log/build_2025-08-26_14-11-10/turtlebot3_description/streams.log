@@ -1,0 +1,61 @@
+[0.033s] Invoking command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake /home/rokey1/turtlebot3_ws/src/turtlebot3/turtlebot3_description -DCMAKE_INSTALL_PREFIX=/home/rokey1/turtlebot3_ws/install/turtlebot3_description
+[1.042s] -- The C compiler identification is GNU 11.4.0
+[1.043s] -- The CXX compiler identification is GNU 11.4.0
+[1.043s] -- Detecting C compiler ABI info
+[1.043s] -- Detecting C compiler ABI info - done
+[1.043s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.043s] -- Detecting C compile features
+[1.043s] -- Detecting C compile features - done
+[1.043s] -- Detecting CXX compiler ABI info
+[1.044s] -- Detecting CXX compiler ABI info - done
+[1.044s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.044s] -- Detecting CXX compile features
+[1.044s] -- Detecting CXX compile features - done
+[1.044s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.044s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.044s] -- Found urdf: 2.6.1 (/opt/ros/humble/share/urdf/cmake)
+[1.044s] -- Configuring done
+[1.045s] -- Generating done
+[1.045s] -- Build files have been written to: /home/rokey1/turtlebot3_ws/build/turtlebot3_description
+[1.050s] Invoked command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake /home/rokey1/turtlebot3_ws/src/turtlebot3/turtlebot3_description -DCMAKE_INSTALL_PREFIX=/home/rokey1/turtlebot3_ws/install/turtlebot3_description
+[1.051s] Invoking command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake --build /home/rokey1/turtlebot3_ws/build/turtlebot3_description -- -j8 -l8
+[1.101s] Invoked command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake --build /home/rokey1/turtlebot3_ws/build/turtlebot3_description -- -j8 -l8
+[1.112s] Invoking command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake --install /home/rokey1/turtlebot3_ws/build/turtlebot3_description
+[1.122s] -- Install configuration: ""
+[1.122s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes
+[1.122s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/bases
+[1.123s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/bases/waffle_base.stl
+[1.156s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/bases/burger_base.stl
+[1.182s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/bases/waffle_pi_base.stl
+[1.204s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors
+[1.204s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors/lds.stl
+[1.204s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors/r200.jpg
+[1.204s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors/astra.jpg
+[1.212s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors/astra.dae
+[1.227s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/sensors/r200.dae
+[1.227s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/wheels
+[1.228s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/wheels/left_tire.stl
+[1.232s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/meshes/wheels/right_tire.stl
+[1.233s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/rviz
+[1.234s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/rviz/model.rviz
+[1.234s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/urdf
+[1.238s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/urdf/turtlebot3_burger.urdf
+[1.238s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/urdf/turtlebot3_waffle.urdf
+[1.238s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/urdf/common_properties.urdf
+[1.238s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/urdf/turtlebot3_waffle_pi.urdf
+[1.238s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/ament_index/resource_index/package_run_dependencies/turtlebot3_description
+[1.243s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/ament_index/resource_index/parent_prefix_path/turtlebot3_description
+[1.251s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/environment/ament_prefix_path.sh
+[1.252s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/environment/ament_prefix_path.dsv
+[1.252s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/environment/path.sh
+[1.252s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/environment/path.dsv
+[1.252s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/local_setup.bash
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/local_setup.sh
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/local_setup.zsh
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/local_setup.dsv
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/package.dsv
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/ament_index/resource_index/packages/turtlebot3_description
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/cmake/turtlebot3_descriptionConfig.cmake
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/cmake/turtlebot3_descriptionConfig-version.cmake
+[1.270s] -- Installing: /home/rokey1/turtlebot3_ws/install/turtlebot3_description/share/turtlebot3_description/package.xml
+[1.282s] Invoked command in '/home/rokey1/turtlebot3_ws/build/turtlebot3_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey1/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey1/turtlebot3_ws/install/turtlebot3_example:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_mission:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_detect:/home/rokey1/turtlebot3_ws/install/turtlebot3_autorace_camera:/opt/ros/humble /usr/bin/cmake --install /home/rokey1/turtlebot3_ws/build/turtlebot3_description
