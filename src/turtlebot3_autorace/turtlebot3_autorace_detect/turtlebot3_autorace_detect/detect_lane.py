@@ -503,6 +503,7 @@ class DetectLane(Node):
                 )
 
         self.is_center_x_exist = True
+        centerx = None  # Initialize centerx to None
 
         if self.reliability_white_line > 50 and self.reliability_yellow_line > 50:
             if white_fraction > 3000 and yellow_fraction > 3000:
@@ -594,7 +595,7 @@ class DetectLane(Node):
         final = cv2.addWeighted(final, 1, color_warp_lines, 1, 0)
 
         if self.pub_image_type == 'compressed':
-            if self.is_center_x_exist:
+            if self.is_center_x_exist and centerx is not None:
                 # publishes lane center
                 msg_desired_center = Float64()
                 msg_desired_center.data = centerx.item(350)
@@ -603,7 +604,7 @@ class DetectLane(Node):
             self.pub_image_lane.publish(self.cvBridge.cv2_to_compressed_imgmsg(final, 'jpg'))
 
         elif self.pub_image_type == 'raw':
-            if self.is_center_x_exist:
+            if self.is_center_x_exist and centerx is not None:
                 # publishes lane center
                 msg_desired_center = Float64()
                 msg_desired_center.data = centerx.item(350)

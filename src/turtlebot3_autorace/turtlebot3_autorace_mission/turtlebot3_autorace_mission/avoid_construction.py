@@ -85,6 +85,14 @@ class AvoidConstruction(Node):
             self.odom_callback,
             10
         )
+        
+        # Subscribe to navigation status
+        self.nav_status_sub = self.create_subscription(
+            Bool,
+            '/navigation_active',
+            self.nav_status_callback,
+            10
+        )
         self.image_sub = self.create_subscription(
             Image,
             '/camera/image_projected',
@@ -94,7 +102,7 @@ class AvoidConstruction(Node):
 
         self.detect_traffic_type_sub = self.create_subscription(
             String,
-            '/detec/traffic/type',
+            '/detect/traffic/type',
             self.traffic_type_callback,
             10
         )
@@ -123,7 +131,7 @@ class AvoidConstruction(Node):
         )
         self.avoid_cmd_pub = self.create_publisher(
             Twist,
-            '/avoid_control',
+            '/lane_cmd_vel',  # Changed to arbiter topic
             10
         )
         self.avoid_active_pub = self.create_publisher(
@@ -134,6 +142,16 @@ class AvoidConstruction(Node):
 
         self.bridge = CvBridge()
         self.lane_detected = False
+        
+        # Navigation state
+        self.navigation_active = False
+        
+        # Additional publisher for dummy commands when navigation is active
+        self.dummy_cmd_pub = self.create_publisher(
+            Twist,
+            '/dummy_lane_cmd',
+            10
+        )
 
         # Parameter settings
         self.danger_distance = 0.24    # Danger zone y threshold (meters)
@@ -286,6 +304,33 @@ class AvoidConstruction(Node):
         self.traffic_last_update_time = self.get_clock().now()
         self.traffic_light_active = True
         self.get_logger().info(f'Traffic light detected: {self.traffic_type}')
+    
+    def nav_status_callback(self, msg):
+        """Navigation status callback - switches control mode"""
+        prev_state = self.navigation_active
+        self.navigation_active = msg.data
+        
+        if prev_state != self.navigation_active:
+            if self.navigation_active:
+                self.get_logger().info('Navigation ACTIVE - Lane control DISABLED')
+            else:
+                self.get_logger().info('Navigation INACTIVE - Lane control ENABLED')
+    
+    def publish_control_command(self, twist):
+        """
+        Publish control command - routes to appropriate topic based on navigation state
+        
+        Modified: 2025-08-26 11:32 - Added navigation state-based routing
+        - When navigation_active=True: commands sent to dummy topic (disabled)
+        - When navigation_active=False: commands sent to normal lane control topic
+        This prevents lane following from interfering with autonomous navigation
+        """
+        if self.navigation_active:
+            # Navigation is active - send to dummy topic (lane control disabled)
+            self.dummy_cmd_pub.publish(twist)
+        else:
+            # Navigation is not active - send to normal lane control
+            self.avoid_cmd_pub.publish(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
     
     # [START] Code added for parking sign callback (2025-08-25)
     def parking_sign_callback(self, msg):
@@ -468,7 +513,7 @@ class AvoidConstruction(Node):
             self.get_logger().info('Red light detected - Stopping')
             self.state = 'TRAFFIC_STOP'
             twist = Twist()  # Zero velocity
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
             self.publish_active(True)
             return
         
@@ -478,7 +523,7 @@ class AvoidConstruction(Node):
             twist = Twist()
             twist.linear.x = self.speed * self.yellow_speed_multiplier
             twist.angular.z = 0.0
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
             self.publish_active(True)
             return
         
@@ -502,12 +547,12 @@ class AvoidConstruction(Node):
             self.get_logger().info('Yellow light detected - Preparing to go')
             # Stay stopped but prepare to move
             twist = Twist()
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
             self.publish_active(True)
         else:
             # Stay stopped for red light
             twist = Twist()
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
             self.publish_active(True)
 
     def process_normal_state(self):
@@ -558,7 +603,7 @@ class AvoidConstruction(Node):
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = angular_z
-        self.avoid_cmd_pub.publish(twist)
+        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
         self.publish_active(True)
         
         # Use hysteresis for state transition
@@ -585,7 +630,7 @@ class AvoidConstruction(Node):
         else:
             twist.angular.z = 0.0
         
-        self.avoid_cmd_pub.publish(twist)
+        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
         self.publish_active(True)
         
         if self.lane_detected:
@@ -617,7 +662,7 @@ class AvoidConstruction(Node):
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = angular_z
-        self.avoid_cmd_pub.publish(twist)
+        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
         self.publish_active(True)
         
         # Use hysteresis for state transition
@@ -632,7 +677,7 @@ class AvoidConstruction(Node):
             self.state = 'NORMAL'
             self.publish_active(False)
             twist = Twist()
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
     
     # [START] Code added for parking maneuver state processing (2025-08-25) - PASS-BY PARKING
     def process_parking_maneuver_state(self):
@@ -657,7 +702,7 @@ class AvoidConstruction(Node):
             self.parking_state = 'STOPPING'
             self.parking_stop_start_time = current_time
             twist = Twist()  # Full stop
-            self.avoid_cmd_pub.publish(twist)
+            self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
             self.publish_active(True)
             return
         
@@ -719,7 +764,7 @@ class AvoidConstruction(Node):
                     self.parking_stop_start_time = current_time
                     self.get_logger().info(f'Reached parking position beside sign ({distance_traveled:.3f}m forward). Starting 5-second stop.')
                     twist = Twist()  # Stop immediately
-                    self.avoid_cmd_pub.publish(twist)
+                    self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
                     self.publish_active(True)
                     return
             
@@ -758,7 +803,7 @@ class AvoidConstruction(Node):
                 self.get_logger().info(f'Parking stop beside sign (in lane) - {remaining_time:.1f}s remaining')
                 twist = Twist()  # Stay stopped
         
-        self.avoid_cmd_pub.publish(twist)
+        self.publish_control_command(twist)  # Modified: 2025-08-26 11:32 - Route via navigation-aware control
         self.publish_active(True)
     # [END] Code added for parking maneuver state processing (2025-08-25)
 

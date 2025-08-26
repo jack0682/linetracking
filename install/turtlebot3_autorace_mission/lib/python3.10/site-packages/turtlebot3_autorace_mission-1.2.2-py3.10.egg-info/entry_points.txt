@@ -1,0 +1,7 @@
+[console_scripts]
+avoid_construction = turtlebot3_autorace_mission.avoid_construction:main
+cmd_vel_mux.py = turtlebot3_autorace_mission.cmd_vel_mux:main
+control_lane = turtlebot3_autorace_mission.control_lane:main
+mission_tunnel = turtlebot3_autorace_mission.mission_tunnel:main
+navigation_trigger.py = turtlebot3_autorace_mission.navigation_trigger:main
+

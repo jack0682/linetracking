@@ -12,7 +12,15 @@
       "Bash(apt list:*)",
       "Bash(ros2 run:*)",
       "Bash(ros2 topic list:*)",
-      "Bash(ros2 node list:*)"
+      "Bash(ros2 node list:*)",
+      "Bash(colcon build:*)",
+      "Bash(source:*)",
+      "Bash(chmod:*)",
+      "Bash(sudo apt:*)",
+      "Bash(sudo apt install:*)",
+      "Bash(echo $ROS_DOMAIN_ID)",
+      "Bash(export ROS_DOMAIN_ID=185)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
